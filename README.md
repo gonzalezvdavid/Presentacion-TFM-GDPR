@@ -31,4 +31,4 @@ Presentación del Trabajo Final de Máster sobre el cumplimiento del GDPR en mod
 - ✅ 15 diapositivas completas
 
 ---
-*Presentación desarrollada como parte del programa de Máster en [Nombre del Máster]*
+*Presentación desarrollada como parte del programa de Máster en Análisis de Datos Masivos e Inteligencia Empresarial*

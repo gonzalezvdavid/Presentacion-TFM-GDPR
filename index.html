@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Presentación de TFM sobre anonimización de datos y GDPR en LLMs">
+    <title>TFM: Anonimización de datos y GDPR en LLMs</title>
+    
+    <!-- Optimización de fuentes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Carga diferida de Chart.js -->
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/chart.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0" as="script">
+    
+    <!-- CSS minificado e integrado -->
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#f4f7fa,#dbeafe);color:#18181b;overflow:hidden;height:100vh;width:100vw;position:relative}
+        .presentation-container{width:100%;height:100%;position:relative;aspect-ratio:16/9;margin:0 auto;max-width:1600px;max-height:900px;overflow:hidden}
+        .slide{width:100%;height:100%;position:absolute;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:15px;background:#fff;opacity:0;transform:translateX(100%);transition:all .6s cubic-bezier(.4,0,.2,1);box-shadow:0 20px 40px rgba(0,0,0,.13);border-radius:16px;overflow:hidden;border:1.5px solid #e0e7ef}
+        .slide.active{opacity:1;transform:translateX(0)}
+        .slide.prev{transform:translateX(-100%)}
+        h1{font-size:2.2em;color:#0a2540;margin-bottom:15px;text-align:center;font-weight:800;letter-spacing:0.5px}
+        h2{font-size:1.8em;color:#174ea6;margin-bottom:15px;text-align:center;font-weight:700}
+        h3{font-size:1.3em;color:#0a2540;margin-bottom:12px;font-weight:600}
+        h4{font-size:1.05em;color:#174ea6;margin-bottom:8px;font-weight:600}
+        .subtitle{font-size:1.1em;color:#444;margin-bottom:12px;text-align:center}
+        .content{max-width:1200px;width:100%;text-align:left;padding:12px;height:calc(100% - 35px);display:flex;flex-direction:column;justify-content:center}
+        .scrollable-content{max-height:calc(100vh - 150px);overflow-y:auto;padding-right:8px;width:100%}
+        .scrollable-content::-webkit-scrollbar{width:7px}
+        .scrollable-content::-webkit-scrollbar-thumb{background:#174ea6;border-radius:4px}
+        .center-content{text-align:center}
+        ul{list-style:none;padding:0}
+        li{margin:8px 0;padding:10px 16px;background:#f9fafb;border-left:5px solid #2563eb;border-radius:10px;font-size:1em;transition:transform .3s,background .3s;color:#18181b;box-shadow:0 2px 8px rgba(23,78,166,0.04)}
+        li:hover{transform:translateX(7px);background:#e0e7ef}
+        .icon{margin-right:8px;font-size:1.1em}
+        .navigation{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:100;background:#174ea6;padding:8px 18px;border-radius:32px;box-shadow:0 4px 16px rgba(23,78,166,0.13)}
+        .nav-btn{padding:10px 22px;background:#2563eb;color:#fff;border:none;border-radius:22px;cursor:pointer;font-weight:700;transition:all .3s;box-shadow:0 4px 12px rgba(23,78,166,.13);font-size:1em;letter-spacing:0.5px}
+        .nav-btn:hover{background:#0a2540;transform:translateY(-2px);box-shadow:0 6px 18px rgba(23,78,166,.18)}
+        .nav-btn:disabled{background:#b0b0b0;color:#fff;cursor:not-allowed;transform:none}
+        .slide-counter{position:fixed;top:15px;right:15px;background:#0a2540;color:#fff;padding:7px 16px;border-radius:15px;font-weight:700;z-index:100;font-size:1em;box-shadow:0 2px 8px rgba(23,78,166,0.10)}
+        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:12px 0}
+        .card{background:#fff;padding:16px 14px;border-radius:14px;border:2px solid #e0e7ef;transition:all .3s;box-shadow:0 4px 18px rgba(23,78,166,0.07);color:#18181b}
+        .card:hover{border-color:#2563eb;transform:translateY(-4px);box-shadow:0 8px 28px rgba(23,78,166,0.13)}
+        .metric{text-align:center;padding:14px 10px;background:linear-gradient(135deg,#2563eb,#174ea6);color:#fff;border-radius:12px;margin:8px;box-shadow:0 2px 10px rgba(23,78,166,0.10)}
+        .metric-value{font-size:2em;font-weight:800;margin-bottom:4px;color:#fff;text-shadow:0 2px 8px rgba(23,78,166,0.13)}
+        .metric-label{font-size:1em;opacity:.98;color:#e0e7ef}
+        *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#1e3c72,#2a5298);color:#333;overflow:hidden;height:100vh;width:100vw;position:relative}.presentation-container{width:100%;height:100%;position:relative;aspect-ratio:16/9;margin:0 auto;max-width:1600px;max-height:900px;overflow:hidden}.slide{width:100%;height:100%;position:absolute;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:15px;background:#fff;opacity:0;transform:translateX(100%);transition:all .6s cubic-bezier(.4,0,.2,1);box-shadow:0 20px 40px rgba(0,0,0,.1);border-radius:8px;overflow:hidden}.slide.active{opacity:1;transform:translateX(0)}.slide.prev{transform:translateX(-100%)}h1{font-size:2.1em;color:#1e3c72;margin-bottom:15px;text-align:center;font-weight:700}h2{font-size:1.7em;color:#2a5298;margin-bottom:15px;text-align:center;font-weight:600}h3{font-size:1.3em;color:#1e3c72;margin-bottom:12px;font-weight:500}h4{font-size:1.05em;color:#2a5298;margin-bottom:8px;font-weight:500}.subtitle{font-size:1.05em;color:#666;margin-bottom:12px;text-align:center}.content{max-width:1200px;width:100%;text-align:left;padding:12px;height:calc(100% - 35px);display:flex;flex-direction:column;justify-content:center}.scrollable-content{max-height:calc(100vh - 150px);overflow-y:auto;padding-right:8px;width:100%}.scrollable-content::-webkit-scrollbar{width:6px}.scrollable-content::-webkit-scrollbar-thumb{background:#2a5298;border-radius:3px}.center-content{text-align:center}ul{list-style:none;padding:0}li{margin:8px 0;padding:8px 12px;background:#f8fafc;border-left:4px solid #2a5298;border-radius:8px;font-size:.92em;transition:transform .3s ease}li:hover{transform:translateX(5px);background:#e2e8f0}.icon{margin-right:6px;font-size:1em}.navigation{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:100;background:rgba(30,60,114,.9);padding:6px 12px;border-radius:30px}.nav-btn{padding:8px 18px;background:#1e3c72;color:#fff;border:none;border-radius:20px;cursor:pointer;font-weight:500;transition:all .3s ease;box-shadow:0 4px 10px rgba(30,60,114,.3);font-size:.9em}.nav-btn:hover{background:#2a5298;transform:translateY(-2px);box-shadow:0 6px 15px rgba(30,60,114,.4)}.nav-btn:disabled{background:#ccc;cursor:not-allowed;transform:none}.slide-counter{position:fixed;top:15px;right:15px;background:rgba(30,60,114,.9);color:#fff;padding:6px 12px;border-radius:15px;font-weight:500;z-index:100;font-size:.9em}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:12px 0}.card{background:#f8fafc;padding:12px;border-radius:10px;border:2px solid #e2e8f0;transition:all .3s ease}.card:hover{border-color:#2a5298;transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.08)}.metric{text-align:center;padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-radius:10px;margin:6px}.metric-value{font-size:1.8em;font-weight:700;margin-bottom:4px}.metric-label{font-size:.9em;opacity:.9}.comparison-table{width:100%;border-collapse:collapse;margin:12px 0;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.08);font-size:.88em}.comparison-table th,.comparison-table td{padding:10px 12px;text-align:center;border-bottom:1px solid #e2e8f0}.comparison-table th{background:#1e3c72;color:#fff;font-weight:600}.comparison-table tr:hover{background:#f8fafc}.highlight-green{color:#059669;font-weight:600}.highlight-red{color:#dc2626;font-weight:600}.footer{position:fixed;bottom:0;left:0;right:0;background:rgba(30,60,114,.9);color:#fff;text-align:center;padding:6px;font-size:.75em;z-index:99}.progress-bar{position:fixed;top:0;left:0;height:4px;background:#2a5298;transition:width .6s ease;z-index:101}@keyframes fadeInUp{0%{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}.animate{animation:fadeInUp .6s ease forwards}.logo{width:45px;height:45px;background:#2a5298;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.2em;font-weight:700;margin:0 auto 12px}.methodology-diagram{display:flex;justify-content:space-between;align-items:center;margin:15px 0;flex-wrap:wrap}.phase{flex:1;min-width:120px;text-align:center;padding:12px;margin:6px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-radius:8px;position:relative;font-size:.85em}.phase::after{content:'→';position:absolute;right:-10px;top:50%;transform:translateY(-50%);font-size:1.1em;color:#2a5298}.phase:last-child::after{display:none}.chart-container{width:100%;height:200px;margin:15px 0;display:flex;justify-content:center;align-items:center}.podium{display:flex;justify-content:center;align-items:flex-end;margin:15px 0;height:130px}.podium-place{display:flex;flex-direction:column;align-items:center;margin:0 8px}.podium-1{height:110px;width:90px;background:linear-gradient(to bottom,#ffd700,#ffa500);border-radius:8px 8px 0 0;display:flex;justify-content:center;align-items:center;color:#fff;font-weight:700;font-size:1.1em}.podium-2{height:90px;width:90px;background:linear-gradient(to bottom,#c0c0c0,#a0a0a0);border-radius:8px 8px 0 0;display:flex;justify-content:center;align-items:center;color:#fff;font-weight:700;font-size:1.1em}.podium-3{height:70px;width:90px;background:linear-gradient(to bottom,#cd7f32,#a56a2b);border-radius:8px 8px 0 0;display:flex;justify-content:center;align-items:center;color:#fff;font-weight:700;font-size:1.1em}.podium-label{margin-top:8px;font-weight:700;font-size:1em}.metrics-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:.88em}.metrics-table th,.metrics-table td{padding:10px;text-align:left;border-bottom:1px solid #e2e8f0}.metrics-table th{background:#f1f5f9;font-weight:600;color:#1e3c72}.metrics-table tr:last-child td{border-bottom:none}.tabs{display:flex;margin-bottom:15px;gap:5px}.tab{padding:8px 15px;background:#e2e8f0;border:none;border-radius:5px;cursor:pointer;font-weight:500;transition:all .3s ease;font-size:.9em}.tab.active{background:#2a5298;color:#fff}.tab-content{display:none}.tab-content.active{display:block}.expandible .content{display:none;padding-top:10px}.expandible.active .content{display:block}.expandible h3{cursor:pointer;display:flex;justify-content:space-between;align-items:center}.expandible h3 .toggle{font-size:1.2em}.param-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:.88em}.param-table th,.param-table td{padding:10px;text-align:left;border-bottom:1px solid #e2e8f0}.param-table th{background:#f1f5f9;font-weight:600;color:#1e3c72}.param-table tr:last-child td{border-bottom:none}.vulnerability-card{background:#fef2f2;border-left:4px solid #dc2626;padding:12px;border-radius:8px;margin-bottom:10px}.vulnerability-card h4{color:#dc2626;margin-bottom:5px}.degradation-bar{display:flex;align-items:center;margin:10px 0}.bar-label{width:120px;font-weight:500;color:#1e3c72;font-size:.9em}.bar-container{flex:1;height:25px;background:#e2e8f0;border-radius:12px;overflow:hidden;position:relative}.bar-fill{height:100%;background:linear-gradient(90deg,#ff9a56,#ff6b6b);border-radius:12px}.bar-value{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#fff;font-weight:500;font-size:.9em}.gdpr-eval{display:flex;justify-content:space-around;margin-top:15px}.gdpr-metric{text-align:center;padding:10px;border-radius:8px;font-weight:600}.gdpr-high{background:#059669;color:#fff}.gdpr-medium{background:#f59e0b;color:#fff}.gdpr-low{background:#dc2626;color:#fff}.portada-info{font-size:1.35em;font-weight:500;margin:10px 0 0}.unie-logo{position:absolute;top:30px;right:40px;width:135px;height:auto;z-index:10}.bandera-es{height:1.2em;vertical-align:middle;margin-left:8px}@media (max-width:1024px){h1{font-size:1.8em}h2{font-size:1.5em}}@media (max-width:768px){.slide{padding:12px}h1{font-size:1.6em}h2{font-size:1.3em}.navigation{bottom:12px}.nav-btn{padding:6px 12px;font-size:.8em}.grid{grid-template-columns:1fr;gap:8px}.slide-counter{top:12px;right:12px;font-size:.8em}.content{padding:8px}li{font-size:.82em;padding:6px 10px}.card{padding:10px}.podium{flex-direction:column;align-items:center;height:auto}.podium-place{margin:8px 0}.scrollable-content{max-height:calc(100vh - 130px)}.gdpr-eval{flex-direction:column;gap:8px}.portada-info{font-size:1.1em}.unie-logo{top:20px;right:20px;width:100px}}@media (max-width:480px){h1{font-size:1.4em}h2{font-size:1.2em}.content{padding:5px}.portada-info{font-size:.95em}.unie-logo{width:80px;top:15px;right:15px}}.skip-link{position:absolute;top:-40px;left:0;background:#1e3c72;color:#fff;padding:8px;z-index:1000;transition:top .3s}.skip-link:focus{top:0}
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+    <div class="progress-bar" id="progressBar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+    <div class="slide-counter" id="slideCounter" aria-live="polite">1 / 14</div>
+
+    <div class="presentation-container" id="main-content" role="application" aria-roledescription="presentación">
+        <!-- Slide 1: Portada -->
+        <div class="slide active" role="region" aria-label="Portada" aria-describedby="slide1-desc">
+            <div class="content center-content">
+                <img src="logo-unie.jpg" alt="Logo UNIE Universidad" class="unie-logo" width="135" height="auto">
+                <div class="logo" aria-hidden="true">🔒</div>
+                <h1>Anonimización de datos personales y cumplimiento del GDPR en datos generados por modelos de lenguaje de gran escala (LLMs)</h1>
+                <div class="subtitle" style="font-size: 1.5em; font-weight: 600;">Trabajo Final de Máster</div>
+                <div style="margin: 25px 0;">
+                    <p class="portada-info"><strong>Autores:</strong><br>Ing. Armando Rubén Ita Silva<br>Ing. Daniel Alexis Mendoza Corne<br>Ing. David Alexander González Vásquez</p>
+                    <p class="portada-info"><strong>Tutor:</strong> Prof. D. Desirée Delgado Linares</p>
+                    <p class="portada-info"><strong>Universidad:</strong> UNIE Universidad</p>
+                    <p class="portada-info"><strong>Fecha:</strong> Junio 2025</p>
+                    <p class="portada-info">Madrid, España <img src="españa.png" alt="Bandera de España" class="bandera-es" width="24" height="16"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Agenda -->
+        <div class="slide" role="region" aria-label="Agenda" aria-describedby="slide2-desc">
+            <div class="content">
+                <h2>📋 Agenda de la Presentación</h2>
+                <ul>
+                    <li><span class="icon">🤖</span>LLMs: Definición y Aplicaciones</li>
+                    <li><span class="icon">⚠️</span>Riesgos de Privacidad en LLMs</li>
+                    <li><span class="icon">🎯</span>Objetivos del Estudio</li>
+                    <li><span class="icon">⚖️</span>Marco Legal: GDPR</li>
+                    <li><span class="icon">📊</span>Dataset: PaySim1</li>
+                    <li><span class="icon">⚖️</span>Comparación de Técnicas con Justificación Legal</li>
+                    <li><span class="icon">🔬</span>Metodología: CRISP-DM</li>
+                    <li><span class="icon">📊</span>Métricas de Evaluación</li>
+                    <li><span class="icon">⚙️</span>XGBoost: Configuración Detallada</li>
+                    <li><span class="icon">⚠️</span>XGBoost: Vulnerabilidades e Impacto</li>
+                    <li><span class="icon">🏆</span>Ranking de Modelos</li>
+                    <li><span class="icon">🎯</span>Conclusiones</li>
+                    <li><span class="icon">💡</span>Recomendaciones y Cierre</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 3: LLMs -->
+        <div class="slide" role="region" aria-label="LLMs" aria-describedby="slide3-desc">
+            <div class="content">
+                <h2>🤖 LLMs: Definición y Aplicaciones</h2>
+                
+                <div class="card" style="margin-bottom: 15px; padding: 12px; background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                    <h3 style="color: white; margin-bottom: 10px;">📝 ¿Qué son los LLMs?</h3>
+                    <p style="font-size: 0.92em; line-height: 1.4; margin: 0;">
+                        Los Modelos de Lenguaje de Gran Escala (LLMs) son sistemas de IA entrenados con enormes cantidades de texto para generar contenido similar al humano. Aplicados en finanzas para análisis de riesgo crediticio, detección de fraude y atención automatizada.
+                    </p>
+                </div>
+
+                <div class="card">
+                    <h3>💰 Aplicaciones Financieras</h3>
+                    <ul style="margin: 0; padding: 0;">
+                        <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.88em;"><span class="icon">💳</span>Análisis de riesgo crediticio</li>
+                        <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.88em;"><span class="icon">🚨</span>Detección de fraude</li>
+                        <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.88em;"><span class="icon">🤝</span>Atención al cliente automatizada</li>
+                        <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.88em;"><span class="icon">📊</span>Análisis de sentimientos</li>
+                        <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.88em;"><span class="icon">📈</span>Predicción de mercados</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Riesgos de Privacidad -->
+        <div class="slide" role="region" aria-label="Riesgos de Privacidad" aria-describedby="slide4-desc">
+            <div class="content">
+                <h2>⚠️ Riesgos de Privacidad en LLMs</h2>
+                
+                <div class="card">
+                    <h3>Principales Riesgos</h3>
+                    <ul style="margin: 0; padding: 0;">
+                        <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.88em;"><span class="icon">🧠</span><strong>Memorización:</strong> Datos personales específicos</li>
+                        <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.88em;"><span class="icon">🎯</span><strong>Prompt injection:</strong> Extracción maliciosa</li>
+                        <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.88em;"><span class="icon">🔍</span><strong>Inferencia:</strong> Deducción de atributos</li>
+                        <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.88em;"><span class="icon">⚖️</span><strong>GDPR:</strong> Violaciones normativas</li>
+                    </ul>
+                </div>
+
+                <div class="card" style="margin-top: 12px; background: #fee2e2; border-color: #dc2626;">
+                    <h3 style="color: #dc2626; margin-bottom: 8px;">🚨 Impacto Crítico en Finanzas</h3>
+                    <p style="margin: 0; font-size: 0.88em;">
+                        <strong>Reidentificación de usuarios, filtración de datos bancarios, pérdidas económicas y sanciones GDPR</strong> hasta €20M o 4% del volumen de negocio anual.
+                    </p>
+                </div>
+                
+                <div class="card" style="margin-top: 12px;">
+                    <h3>📉 Impacto en la Confianza</h3>
+                    <div class="grid">
+                        <div class="metric">
+                            <div class="metric-value">72%</div>
+                            <div class="metric-label">Usuarios preocupados por privacidad</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">63%</div>
+                            <div class="metric-label">Evitan servicios financieros por desconfianza</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Objetivos del Estudio -->
+        <div class="slide" role="region" aria-label="Objetivos del Estudio" aria-describedby="slide5-desc">
+            <div class="content">
+                <h2>🎯 Objetivos del Estudio</h2>
+                
+                <div class="card" style="margin-bottom: 15px; padding: 15px; background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                    <h3 style="color: white; margin-bottom: 10px;">🔍 Objetivo General</h3>
+                    <p style="font-size: 0.95em; line-height: 1.4;">
+                        Desarrollar y validar un marco integral de evaluación que permita analizar el grado de cumplimiento del GDPR cuando se utilizan modelos de lenguaje de gran escala (LLMs) en escenarios financieros simulados, aplicando técnicas avanzadas de anonimización sobre el conjunto de datos PaySim1.
+                    </p>
+                </div>
+
+                <h3 style="color: #2a5298; margin-bottom: 12px;">📋 Objetivos Específicos</h3>
+                <div class="scrollable-content">
+                    <div class="grid">
+                        <div class="card">
+                            <ul style="margin: 0; padding: 0;">
+                                <li style="margin: 7px 0; background: none; border: none; padding: 3px 0;"><span class="icon">📚</span><strong>Analizar riesgos de privacidad</strong> en LLMs</li>
+                                <li style="margin: 7px 0; background: none; border: none; padding: 3px 0;"><span class="icon">🔬</span><strong>Diseñar metodología</strong> de evaluación GDPR</li>
+                                <li style="margin: 7px 0; background: none; border: none; padding: 3px 0;"><span class="icon">📊</span><strong>Implementar técnicas</strong> de anonimización</li>
+                                <li style="margin: 7px 0; background: none; border: none; padding: 3px 0;"><span class="icon">🤖</span><strong>Entrenar modelos</strong> de detección ML</li>
+                            </ul>
+                        </div>
+                        <div class="card">
+                            <ul style="margin: 0; padding: 0;">
+                                <li style="margin: 7px 0; background: none; border: none; padding: 3px 0;"><span class="icon">📈</span><strong>Evaluar impacto</strong> en utilidad del modelo</li>
+                                <li style="margin: 7px 0; background: none; border: none; padding: 3px 0;"><span class="icon">⚖️</span><strong>Analizar trade-offs</strong> privacidad-utilidad</li>
+                                <li style="margin: 7px 0; background: none; border: none; padding: 3px 0;"><span class="icon">📱</span><strong>Diseñar dashboard</strong> de monitoreo GDPR</li>
+                                <li style="margin: 7px 0; background: none; border: none; padding: 3px 0;"><span class="icon">💡</span><strong>Formular recomendaciones</strong> prácticas</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: GDPR y Técnicas de Anonimización -->
+        <div class="slide" role="region" aria-label="GDPR" aria-describedby="slide6-desc">
+            <div class="content">
+                <h2>⚖️ Marco Legal: GDPR</h2>
+                
+                <div class="card" style="margin-bottom: 15px;">
+                    <h3 style="color: #1e3c72; margin-bottom: 10px;">📜 Reglamento General de Protección de Datos (GDPR)</h3>
+                    <div class="grid">
+                        <div class="card">
+                            <h4>🎯 Principios Clave</h4>
+                            <ul style="margin-top: 6px; font-size: 0.86em;">
+                                <li>Minimización de datos</li>
+                                <li>Privacidad por diseño</li>
+                                <li>Derecho al olvido</li>
+                                <li>Consentimiento explícito</li>
+                            </ul>
+                        </div>
+                        <div class="card">
+                            <h4>💰 Sanciones</h4>
+                            <p style="font-size: 0.86em;">Multas de hasta €20 millones o 4% del volumen de negocio anual mundial.</p>
+                        </div>
+                        <div class="card">
+                            <h4>🔍 Impacto en IA</h4>
+                            <p style="font-size: 0.86em;">Necesidad de técnicas de anonimización efectivas para el uso seguro de datos en modelos de IA.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 style="color: #1e3c72; margin-bottom: 10px;">🔒 Técnicas de Anonimización</h3>
+                    <div class="grid">
+                        <div class="card">
+                            <h4>🔐 SHA-256</h4>
+                            <p style="font-size: 0.86em;"><strong>Variables:</strong> nameOrig, nameDest</p>
+                            <p style="font-size: 0.86em;">Función hash criptográfica para transformación irreversible de identificadores únicos.</p>
+                        </div>
+                        <div class="card">
+                            <h4>🔢 k-anonimato (k=10)</h4>
+                            <p style="font-size: 0.86em;"><strong>Aplicación:</strong> Combinación de atributos</p>
+                            <p style="font-size: 0.86em;">Cada registro es indistinguible de al menos k-1 otros registos en atributos quasi-identificadores.</p>
+                        </div>
+                        <div class="card">
+                            <h4>🌈 l-diversidad (l=2)</h4>
+                            <p style="font-size: 0.86em;"><strong>Aplicación:</strong> Atributos sensibles</p>
+                            <p style="font-size: 0.86em;">Cada grupo de k registros debe tener al menos l valores distintos para atributos sensibles.</p>
+                        </div>
+                        <div class="card">
+                            <h4>📊 Privacidad Diferencial</h4>
+                            <p style="font-size: 0.86em;"><strong>Aplicación:</strong> Ruido controlado</p>
+                            <p style="font-size: 0.86em;">Añade ruido estadístico controlado para limitar la información sobre individuos específicos.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Dataset -->
+        <div class="slide" role="region" aria-label="Dataset" aria-describedby="slide7-desc">
+            <div class="content">
+                <h2>📊 Dataset: PaySim1</h2>
+                
+                <div class="card" style="margin-bottom: 15px; background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                    <h3 style="color: white; margin-bottom: 10px;">Características del Dataset</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 10px; font-size: 0.86em;">
+                        <div>
+                            <p style="margin: 4px 0;"><strong>📝 Origen:</strong> Simulador de transacciones financieras móviles</p>
+                            <p style="margin: 4px 0;"><strong>📈 Volumen:</strong> 6.3M transacciones, 11 variables</p>
+                        </div>
+                        <div>
+                            <p style="margin: 4px 0;"><strong>⏱️ Duración:</strong> 744 horas simuladas</p>
+                            <p style="margin: 4px 0;"><strong>🚨 Fraude:</strong> 0.13% casos positivos</p>
+                        </div>
+                        <div>
+                            <p style="margin: 4px 0;"><strong>⚠️ Riesgo GDPR:</strong> nameOrig, nameDest</p>
+                            <p style="margin: 4px 0;"><strong>🛡️ Protección:</strong> Identificadores únicos sensibles</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="color: #1e3c72; margin-bottom: 10px;">🔍 Distribución de Datos</h3>
+                    <div class="grid">
+                        <div class="metric">
+                            <div class="metric-value">83.5%</div>
+                            <div class="metric-label">Transacciones normales</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">0.13%</div>
+                            <div class="metric-label">Transacciones fraudulentas</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">16.37%</div>
+                            <div class="metric-label">Otras categorías</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top: 12px;">
+                    <h3 style="color: #1e3c72; margin-bottom: 10px;">📋 Variables Clave</h3>
+                    <div class="comparison-table">
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Variable</th>
+                                    <th>Tipo</th>
+                                    <th>Sensibilidad GDPR</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>nameOrig</strong></td>
+                                    <td>Identificador</td>
+                                    <td>Alta</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>nameDest</strong></td>
+                                    <td>Identificador</td>
+                                    <td>Alta</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>amount</strong></td>
+                                    <td>Numérico</td>
+                                    <td>Media</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>step</strong></td>
+                                    <td>Temporal</td>
+                                    <td>Baja</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Comparación de Técnicas con Justificación Legal -->
+        <div class="slide" role="region" aria-label="Técnicas" aria-describedby="slide8-desc">
+            <div class="content">
+                <h2>⚖️ Comparación de Técnicas con Justificación Legal</h2>
+                
+                <div class="card" style="margin-bottom: 15px;">
+                    <h3 style="color: #1e3c72; margin-bottom: 10px; text-align: center;">📜 Fundamentación Legal de las Técnicas</h3>
+                    <div class="comparison-table">
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Técnica</th>
+                                    <th>Variable Objetivo</th>
+                                    <th>Justificación Legal (GDPR)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>SHA-256</strong></td>
+                                    <td>nameOrig, nameDest</td>
+                                    <td>Art. 4(5) - Transformación irreversible de identificadores</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Agrupación temporal</strong></td>
+                                    <td>step (tiempo)</td>
+                                    <td>Art. 5(1)(c) - Minimización de datos</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Rangos de montos</strong></td>
+                                    <td>amount, oldbalance, newbalance</td>
+                                    <td>Art. 25 - Privacidad por diseño</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>k-anonimato (k=10)</strong></td>
+                                    <td>Combinación de atributos</td>
+                                    <td>Considerando 31 - Prevención de reidentificación</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>l-diversidad (l=2)</strong></td>
+                                    <td>Atributos sensibles</td>
+                                    <td>Art. 25 - Protección de datos sensibles</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Privacidad Diferencial</strong></td>
+                                    <td>Datos numéricos</td>
+                                    <td>Art. 32 - Seguridad del tratamiento</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 style="color: #1e3c72; margin-bottom: 10px;">📌 Cumplimiento GDPR</h3>
+                    <div class="grid">
+                        <div class="metric">
+                            <div class="metric-value">Art. 4(5)</div>
+                            <div class="metric-label">Datos anonimizados</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">Art. 5(1)(c)</div>
+                            <div class="metric-label">Minimización de datos</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">Art. 25</div>
+                            <div class="metric-label">Privacidad por diseño</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Metodología Parte 1 -->
+        <div class="slide" role="region" aria-label="Metodología" aria-describedby="slide9-desc">
+            <div class="content">
+                <h2>🔬 Metodología: CRISP-DM</h2>
+                
+                <div class="card" style="margin-bottom: 15px;">
+                    <h3 style="color: #1e3c72; margin-bottom: 10px;">📊 Proceso CRISP-DM</h3>
+                    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
+                        <div style="flex: 1; min-width: 110px; text-align: center; padding: 6px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 6px; margin: 3px; font-size: 0.85em;">
+                            <strong>📋 Business</strong><br><small>Objetivos GDPR</small>
+                        </div>
+                        <div style="flex: 1; min-width: 110px; text-align: center; padding: 6px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 6px; margin: 3px; font-size: 0.85em;">
+                            <strong>📊 Data</strong><br><small>PaySim1</small>
+                        </div>
+                        <div style="flex: 1; min-width: 110px; text-align: center; padding: 6px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 6px; margin: 3px; font-size: 0.85em;">
+                            <strong>🔧 Preparation</strong><br><small>Anonimización</small>
+                        </div>
+                        <div style="flex: 1; min-width: 110px; text-align: center; padding: 6px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 6px; margin: 3px; font-size: 0.85em;">
+                            <strong>🤖 Modeling</strong><br><small>ML Algorithms</small>
+                        </div>
+                        <div style="flex: 1; min-width: 110px; text-align: center; padding: 6px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 6px; margin: 3px; font-size: 0.85em;">
+                            <strong>📈 Evaluation</strong><br><small>Métricas</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="color: #1e3c72; margin-bottom: 10px; text-align: center;">🤖 Algoritmos Evaluados</h3>
+                    <div class="grid">
+                        <div class="card" style="background: #f0f9ff; border-color: #059669;">
+                            <h4 style="color: #059669;">🌲 Random Forest</h4>
+                            <p style="font-size: 0.86em; margin: 6px 0;"><strong>Tipo:</strong> Ensemble - Bagging</p>
+                            <p style="font-size: 0.86em; margin: 6px 0;"><strong>Ventajas:</strong> Robusto, resistente al overfitting</p>
+                            <p style="font-size: 0.86em; margin: 6px 0;"><strong>Configuración:</strong> 100 árboles, max_depth=10</p>
+                        </div>
+                        <div class="card" style="background: #fff8f0; border-color: #f59e0b;">
+                            <h4 style="color: #92400e;">⚡ XGBoost</h4>
+                            <p style="font-size: 0.86em; margin: 6px 0;"><strong>Tipo:</strong> Ensemble - Gradient Boosting</p>
+                            <p style="font-size: 0.86em; margin: 6px 0;"><strong>Ventajas:</strong> Alto rendimiento, optimización avanzada</p>
+                            <p style="font-size: 0.86em; margin: 6px 0;"><strong>Configuración:</strong> learning_rate=0.1, max_depth=6</p>
+                        </div>
+                        <div class="card" style="background: #fef2f2; border-color: #dc2626;">
+                            <h4 style="color: #dc2626;">📊 Regresión Logística</h4>
+                            <p style="font-size: 0.86em; margin: 6px 0;"><strong>Tipo:</strong> Modelo lineal</p>
+                            <p style="font-size: 0.86em; margin: 6px 0;"><strong>Ventajas:</strong> Interpretable, línea base</p>
+                            <p style="font-size: 0.86em; margin: 6px 0;"><strong>Configuración:</strong> L2 regularization, C=1.0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Metodología Parte 2 -->
+        <div class="slide" role="region" aria-label="Métricas" aria-describedby="slide10-desc">
+            <div class="content">
+                <h2>📊 Métricas de Evaluación</h2>
+                
+                <div class="card">
+                    <h3 style="color: #1e3c72; margin-bottom: 10px; text-align: center;">Métricas Clave</h3>
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>Métrica</th>
+                                <th>Fórmula</th>
+                                <th>Significado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Precisión (Precision)</strong></td>
+                                <td>TP / (TP + FP)</td>
+                                <td>Proporción de predicciones positivas correctas</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Sensibilidad (Recall)</strong></td>
+                                <td>TP / (TP + FN)</td>
+                                <td>Proporción de casos positivos identificados correctamente</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Exactitud (Accuracy)</strong></td>
+                                <td>(TP + TN) / (TP + TN + FP + FN)</td>
+                                <td>Proporción total de predicciones correctas</td>
+                            </tr>
+                            <tr>
+                                <td><strong>F1-Score</strong></td>
+                                <td>2 * (Prec * Rec) / (Prec + Rec)</td>
+                                <td>Media armónica entre precisión y sensibilidad</td>
+                            </tr>
+                            <tr>
+                                <td><strong>AUC-ROC</strong></td>
+                                <td>Área bajo la curva</td>
+                                <td>Capacidad de distinguir entre clases positivas y negativas</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="card" style="margin-top: 12px;">
+                    <h3 style="color: #1e3c72; margin-bottom: 10px;">🔄 Pipeline de Anonimización</h3>
+                    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
+                        <div class="phase">Datos Originales</div>
+                        <div class="phase">Seudonimización SHA-256</div>
+                        <div class="phase">K-anonimato (k=10)</div>
+                        <div class="phase">L-diversidad (l=2)</div>
+                        <div class="phase">Entrenamiento XGBoost</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: XGBoost Configuración Detallada -->
+        <div class="slide" role="region" aria-label="XGBoost" aria-describedby="slide11-desc">
+            <div class="content">
+                <h2>⚙️ XGBoost: Configuración Detallada</h2>
+                
+                <div class="card" style="margin-bottom: 15px; background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                    <h3 style="color: white; margin-bottom: 10px;">⚙️ Características Técnicas</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; font-size: 0.88em;">
+                        <div>
+                            <p style="margin: 5px 0;"><strong>🔄 Gradient Boosting:</strong> Construcción secuencial de árboles</p>
+                            <p style="margin: 5px 0;"><strong>📊 Optimización:</strong> Aproximaciones de segundo orden (Hessiano)</p>
+                        </div>
+                        <div>
+                            <p style="margin: 5px 0;"><strong>🛡️ Regularización:</strong> L1 y L2 incorporadas</p>
+                            <p style="margin: 5px 0;"><strong>🎯 Precisión:</strong> Excelente en datos tabulares</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <div class="card">
+                        <h3 style="color: #1e3c72;">📈 Ventajas Competitivas</h3>
+                        <ul style="margin: 0; padding: 0;">
+                            <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.86em;"><span class="icon">⚡</span>Alto rendimiento en competencias</li>
+                            <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.86em;"><span class="icon">🔍</span>Detección de patrones complejos</li>
+                            <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.86em;"><span class="icon">🎛️</span>Flexibilidad en hiperparámetros</li>
+                            <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.86em;"><span class="icon">📊</span>Interpretabilidad de features</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3 style="color: #1e3c72; margin-bottom: 10px;">🔧 Configuración Detallada</h3>
+                        <table class="param-table">
+                            <thead>
+                                <tr>
+                                    <th>Parámetro</th>
+                                    <th>Valor</th>
+                                    <th>Propósito</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>learning_rate</td>
+                                    <td>0.1</td>
+                                    <td>Controla la contribución de cada árbol</td>
+                                </tr>
+                                <tr>
+                                    <td>max_depth</td>
+                                    <td>6</td>
+                                    <td>Profundidad máxima de los árboles</td>
+                                </tr>
+                                <tr>
+                                    <td>n_estimators</td>
+                                    <td>100</td>
+                                    <td>Número de árboles en el ensamblaje</td>
+                                </tr>
+                                <tr>
+                                    <td>subsample</td>
+                                    <td>0.8</td>
+                                    <td>Fracción de muestras usadas por árbol</td>
+                                </tr>
+                                <tr>
+                                    <td>colsample_bytree</td>
+                                    <td>0.8</td>
+                                    <td>Fracción de características usadas por árbol</td>
+                                </tr>
+                                <tr>
+                                    <td>reg_alpha</td>
+                                    <td>0.1</td>
+                                    <td>Regularización L1 (Lasso)</td>
+                                </tr>
+                                <tr>
+                                    <td>reg_lambda</td>
+                                    <td>1.0</td>
+                                    <td>Regularización L2 (Ridge)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: XGBoost Vulnerabilidades e Impacto -->
+        <div class="slide" role="region" aria-label="Vulnerabilidades" aria-describedby="slide12-desc">
+            <div class="content">
+                <h2>⚠️ XGBoost: Vulnerabilidades e Impacto</h2>
+                
+                <div class="card" style="margin-bottom: 15px;">
+                    <h3 style="color: #1e3c72; margin-bottom: 10px;">🔍 Vulnerabilidades Identificadas</h3>
+                    <div class="grid" style="grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                        <div class="vulnerability-card">
+                            <h4>🧠 Dependencia de Patrones Específicos</h4>
+                            <p style="font-size: 0.88em;">XGBoost depende de relaciones complejas entre variables que se alteran con la anonimización</p>
+                        </div>
+                        <div class="vulnerability-card">
+                            <h4>📉 Pérdida de Granularidad</h4>
+                            <p style="font-size: 0.88em;">La discretización de montos y tiempo rompe los gradientes óptimos que necesita XGBoost</p>
+                        </div>
+                        <div class="vulnerability-card">
+                            <h4>🔀 Alteración de Correlaciones</h4>
+                            <p style="font-size: 0.88em;">Las relaciones entre variables se modifican sustancialmente con las técnicas de anonimización</p>
+                        </div>
+                        <div class="vulnerability-card">
+                            <h4>📉 Reducción de Información</h4>
+                            <p style="font-size: 0.88em;">Menos datos distintivos disponibles para construir árboles eficaces</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="color: #1e3c72; margin-bottom: 10px;">📊 Impacto de la Anonimización</h3>
+                    <div class="chart-container">
+                        <canvas id="degradationChart" aria-label="Gráfico de degradación de rendimiento de XGBoost" role="img"></canvas>
+                    </div>
+                    
+                    <div class="degradation-bar">
+                        <div class="bar-label">Sensibilidad:</div>
+                        <div class="bar-container">
+                            <div class="bar-fill" style="width: 100%">
+                                <div class="bar-value">-20.94%</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="degradation-bar">
+                        <div class="bar-label">F1-Score:</div>
+                        <div class="bar-container">
+                            <div class="bar-fill" style="width: 95%">
+                                <div class="bar-value">-19.90%</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="gdpr-eval">
+                        <div class="gdpr-metric gdpr-high">Cumplimiento: ALTO</div>
+                        <div class="gdpr-metric gdpr-medium">Riesgo: MEDIO</div>
+                        <div class="gdpr-metric gdpr-low">Utilidad: CRÍTICA</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Ranking de Modelos ML -->
+        <div class="slide" role="region" aria-label="Ranking" aria-describedby="slide13-desc">
+            <div class="content">
+                <h2>🏆 Ranking de Modelos</h2>
+                
+                <div class="scrollable-content">
+                    <div style="margin: 15px 0;">
+                        <h3 style="text-align: center; color: #1e3c72; margin-bottom: 12px;">📊 Rendimiento Post-Anonimización</h3>
+                        <table class="comparison-table" style="width: 100%; margin: 12px auto;">
+                            <thead>
+                                <tr style="background: #1e3c72; color: white;">
+                                    <th style="padding: 8px; text-align: left;">Ranking</th>
+                                    <th style="padding: 8px;">Modelo</th>
+                                    <th style="padding: 8px;">F1-Score Original</th>
+                                    <th style="padding: 8px;">F1-Score Anonimizado</th>
+                                    <th style="padding: 8px;">Degradación</th>
+                                    <th style="padding: 8px;">Evaluación</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="background: #f0f9ff;">
+                                    <td style="padding: 8px; font-weight: bold; color: #059669;">🥇 1º</td>
+                                    <td style="padding: 8px; font-weight: bold;">Random Forest</td>
+                                    <td style="padding: 8px; text-align: center;">86.76%</td>
+                                    <td style="padding: 8px; text-align: center; color: #059669; font-weight: bold;">84.74%</td>
+                                    <td style="padding: 8px; text-align: center; color: #059669;">-2.02%</td>
+                                    <td style="padding: 8px; color: #059669;">Excelente</td>
+                                </tr>
+                                <tr style="background: #fff8f0;">
+                                    <td style="padding: 8px; font-weight: bold; color: #f59e0b;">🥈 2º</td>
+                                    <td style="padding: 8px; font-weight: bold;">XGBoost</td>
+                                    <td style="padding: 8px; text-align: center;">86.33%</td>
+                                    <td style="padding: 8px; text-align: center; color: #f59e0b; font-weight: bold;">66.43%</td>
+                                    <td style="padding: 8px; text-align: center; color: #dc2626;">-19.90%</td>
+                                    <td style="padding: 8px; color: #f59e0b;">Vulnerable</td>
+                                </tr>
+                                <tr style="background: #fef2f2;">
+                                    <td style="padding: 8px; font-weight: bold; color: #dc2626;">🥉 3º</td>
+                                    <td style="padding: 8px; font-weight: bold;">Regresión Logística</td>
+                                    <td style="padding: 8px; text-align: center;">52.46%</td>
+                                    <td style="padding: 8px; text-align: center; color: #059669; font-weight: bold;">54.86%</td>
+                                    <td style="padding: 8px; text-align: center; color: #059669;">+2.40%</td>
+                                    <td style="padding: 8px; color: #dc2626;">Base insuficiente</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="grid">
+                        <div class="card" style="background: #f0f9ff; border-color: #059669;">
+                            <h3 style="color: #059669;">🏅 Campeón: Random Forest</h3>
+                            <ul style="margin: 0; padding: 0;">
+                                <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.82em;">✓ Robustez excepcional (-2.02%)</li>
+                                <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.82em;">✓ Mantiene 97.7% del rendimiento</li>
+                                <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.82em;">✓ Ideal para producción GDPR</li>
+                            </ul>
+                        </div>
+                        <div class="card" style="background: #fef3c7; border-color: #f59e0b;">
+                            <h3 style="color: #92400e;">⚠️ Desafío: XGBoost</h3>
+                            <ul style="margin: 0; padding: 0;">
+                                <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.82em;">⚡ Alto rendimiento original</li>
+                                <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.82em;">🔴 Degradación significativa (-19.90%)</li>
+                                <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.82em;">🔧 Requiere optimización avanzada</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="grid" style="margin-top: 15px;">
+                        <div class="card" style="background: #fef2f2; border-color: #dc2626;">
+                            <h3 style="color: #dc2626;">🔍 Causas de la Degradación</h3>
+                            <ul style="margin: 0; padding: 0;">
+                                <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.82em;"><span class="icon">🔗</span><strong>Dependencia de patrones específicos:</strong> XGBoost aprende relaciones granulares</li>
+                                <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.82em;"><span class="icon">📊</span><strong>Agrupación k-anonimato:</strong> Altera distribuciones de features</li>
+                                <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.82em;"><span class="icon">⚡</span><strong>Gradient boosting sensible:</strong> Construcción secuencial afectada</li>
+                            </ul>
+                        </div>
+                        <div class="card" style="background: #f0f9ff; border-color: #2a5298;">
+                            <h3 style="color: #1e3c72;">💡 Estrategias de Optimización</h3>
+                            <ul style="margin: 0; padding: 0;">
+                                <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.82em;"><span class="icon">🎛️</span><strong>Hiperparameter tuning:</strong> Ajuste específico post-anonimización</li>
+                                <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.82em;"><span class="icon">🔧</span><strong>Feature engineering:</strong> Variables derivadas preservando utilidad</li>
+                                <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.82em;"><span class="icon">📈</span><strong>Ensemble híbrido:</strong> Combinación con Random Forest</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Conclusiones -->
+        <div class="slide" role="region" aria-label="Conclusiones" aria-describedby="slide14-desc">
+            <div class="content">
+                <h2>🎯 Conclusiones</h2>
+                <div class="scrollable-content">
+                    <ul>
+                        <li><span class="icon">✅</span><strong>Cumplimiento GDPR alcanzable:</strong> Es posible anonimizar datos financieros para cumplir con la regulación europea</li>
+                        <li><span class="icon">⚖️</span><strong>Trade-off inevitable:</strong> Existe una tensión inherente entre privacidad y utilidad de los datos</li>
+                        <li><span class="icon">🏆</span><strong>Random Forest superior:</strong> Mantiene 97.7% del rendimiento con pérdida mínima (-2.02% F1-Score)</li>
+                        <li><span class="icon">⚠️</span><strong>XGBoost vulnerable:</strong> Degradación significativa (-19.90%) requiere técnicas más sofisticadas</li>
+                        <li><span class="icon">🎯</span><strong>Contexto específico:</strong> La efectividad depende del tipo de datos y aplicación particular</li>
+                        <li><span class="icon">📊</span><strong>Monitoreo continuo:</strong> Sistemas de supervisión son esenciales para mantener el equilibrio privacidad-utilidad</li>
+                    </ul>
+                    <div class="card" style="margin-top: 15px;">
+                        <h3 style="color: #1e3c72; margin-bottom: 10px;">📈 Implicaciones Prácticas</h3>
+                        <div class="grid">
+                            <div class="metric">
+                                <div class="metric-value">84%</div>
+                                <div class="metric-label">Empresas necesitan ajustes GDPR</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">+35%</div>
+                                <div class="metric-label">Inversión en privacidad</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">92%</div>
+                                <div class="metric-label">Aumento confianza usuarios</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: Recomendaciones y Cierre -->
+        <div class="slide" role="region" aria-label="Recomendaciones y Cierre" aria-describedby="slide15-desc">
+            <div class="content">
+                <h2>💡 Recomendaciones y Cierre</h2>
+                
+                <div class="grid">
+                    <div class="card">
+                        <h3>🏦 Para Empresas Financieras</h3>
+                        <ul style="margin: 0; padding: 0;">
+                            <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.86em;"><span class="icon">🛡️</span>Implementar privacidad por diseño</li>
+                            <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.86em;"><span class="icon">📊</span>Evaluación continua de riesgos</li>
+                            <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.86em;"><span class="icon">🎓</span>Formación en GDPR y IA</li>
+                            <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.86em;"><span class="icon">🔍</span>Auditorías regulares</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>👨‍💻 Para Desarrolladores</h3>
+                        <ul style="margin: 0; padding: 0;">
+                            <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.86em;"><span class="icon">🤖</span>Arquitecturas privacy-preserving</li>
+                            <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.86em;"><span class="icon">🌐</span>Federated learning</li>
+                            <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.86em;"><span class="icon">🔢</span>Differential privacy nativa</li>
+                            <li style="margin: 5px 0; background: none; border: none; padding: 2px 0; font-size: 0.86em;"><span class="icon">🛠️</span>Herramientas de validación</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 15px; background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; text-align: center;">
+                    <h3 style="color: white; margin-bottom: 10px;">¡Gracias por su atención!</h3>
+                    <p style="font-size: 0.95em; margin-bottom: 10px;">
+                        "El futuro de la IA depende de nuestra capacidad para innovar respetando la privacidad"
+                    </p>
+                    <div style="display: flex; justify-content: center; gap: 20px; margin-top: 12px; font-size: 0.86em;">
+                        <div>
+                            <p style="margin: 4px 0;">📧 Email: dalexx07.28@gmail.com</p>
+                            <p style="margin: 4px 0;">💼 LinkedIn: David González</p>
+                        </div>
+                        <div>
+                            <p style="margin: 4px 0;">🐙 GitHub: gonzalezvdavid</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)" aria-label="Diapositiva anterior">← Anterior</button>
+        <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)" aria-label="Diapositiva siguiente">Siguiente →</button>
+    </div>
+
+    <div class="footer">
+        Trabajo Final de Máster - Anonimización de datos y GDPR en LLMs - 2025
+    </div>
+
+    <!-- Carga diferida de Chart.js -->
+    <script>
+        // Función para cargar scripts de forma diferida
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.body.appendChild(script);
+            });
+        }
+
+        // Variables globales
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        let chartInitialized = false;
+
+        // Configurar gráficos
+        async function initCharts() {
+            if (!chartInitialized) {
+                try {
+                    // Cargar Chart.js y su plugin solo cuando sean necesarios
+                    await loadScript('https://cdn.jsdelivr.net/npm/chart.js');
+                    await loadScript('https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0');
+                    
+                    // Registrar el plugin de datalabels
+                    if (window.Chart) {
+                        window.Chart.register(window.ChartDataLabels);
+                    }
+                    
+                    // Gráfico para la diapositiva 12 (Vulnerabilidades e Impacto)
+                    const degradationCtx = document.getElementById('degradationChart').getContext('2d');
+                    new window.Chart(degradationCtx, {
+                        type: 'bar',
+                        plugins: [window.ChartDataLabels],
+                        data: {
+                            labels: ['Precisión', 'Sensibilidad', 'F1-Score', 'AUC-ROC'],
+                            datasets: [
+                                {
+                                    label: 'Original',
+                                    data: [99.97, 80.60, 86.33, 92.5],
+                                    backgroundColor: '#3b82f6'
+                                },
+                                {
+                                    label: 'Anonimizado',
+                                    data: [99.92, 59.66, 66.43, 75.1],
+                                    backgroundColor: '#f59e0b'
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    display: false,
+                                    beginAtZero: true,
+                                    max: 110
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                },
+                                datalabels: {
+                                    anchor: 'end',
+                                    align: 'top',
+                                    formatter: function(value) {
+                                        return value + '%';
+                                    },
+                                    color: '#000',
+                                    font: {
+                                        weight: 'bold',
+                                        size: 11
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return context.dataset.label + ': ' + context.parsed.y + '%';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    
+                    chartInitialized = true;
+                } catch (error) {
+                    console.error('Error al cargar Chart.js:', error);
+                }
+            }
+        }
+
+        function updateSlideCounter() {
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+        }
+
+        function updateProgressBar() {
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = progress + '%';
+            progressBar.setAttribute('aria-valuenow', progress);
+        }
+
+        function showSlide(n) {
+            // Remove active class from all slides
+            slides.forEach(slide => {
+                slide.classList.remove('active', 'prev');
+            });
+
+            // Add appropriate classes
+            if (n < currentSlide) {
+                slides[currentSlide].classList.add('prev');
+            }
+            
+            slides[n].classList.add('active');
+            
+            // Animate content
+            setTimeout(() => {
+                const content = slides[n].querySelector('.content');
+                if (content) content.classList.add('animate');
+            }, 300);
+
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = (n === 0);
+            document.getElementById('nextBtn').disabled = (n === totalSlides - 1);
+
+            updateSlideCounter();
+            updateProgressBar();
+            
+            // Initialize charts on relevant slides
+            if (n === 12) {
+                setTimeout(initCharts, 500);
+            }
+        }
+
+        function changeSlide(direction) {
+            const newSlide = currentSlide + direction;
+            
+            if (newSlide >= 0 && newSlide < totalSlides) {
+                currentSlide = newSlide;
+                showSlide(currentSlide);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowLeft') {
+                changeSlide(-1);
+            } else if (event.key === 'ArrowRight') {
+                changeSlide(1);
+            } else if (event.key === 'Home') {
+                currentSlide = 0;
+                showSlide(currentSlide);
+            } else if (event.key === 'End') {
+                currentSlide = totalSlides - 1;
+                showSlide(currentSlide);
+            } else if (event.key === 'Escape') {
+                document.querySelector('.skip-link').focus();
+            }
+        });
+
+        // Touch/swipe support for mobile
+        let startX = null;
+        let startY = null;
+
+        document.addEventListener('touchstart', function(event) {
+            startX = event.touches[0].clientX;
+            startY = event.touches[0].clientY;
+        });
+
+        document.addEventListener('touchend', function(event) {
+            if (!startX || !startY) return;
+
+            const endX = event.changedTouches[0].clientX;
+            const endY = event.changedTouches[0].clientY;
+            const diffX = startX - endX;
+            const diffY = startY - endY;
+
+            // Check if horizontal swipe is more significant than vertical
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                if (diffX > 0) {
+                    // Swipe left - next slide
+                    changeSlide(1);
+                } else {
+                    // Swipe right - previous slide
+                    changeSlide(-1);
+                }
+            }
+
+            startX = null;
+            startY = null;
+        });
+
+        // Initialize presentation
+        showSlide(0);
+        
+        // Setup expandible sections
+        document.querySelectorAll('.expandible h3').forEach(header => {
+            header.addEventListener('click', function() {
+                this.parentElement.classList.toggle('active');
+            });
+        });
+    </script>
+</body>
+</html>

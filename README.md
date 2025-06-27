@@ -3,7 +3,7 @@
 Presentación del Trabajo Final de Máster sobre el cumplimiento del GDPR en modelos de lenguaje de gran escala aplicados al sector financiero.
 
 ## 🚀 Ver Presentación
-👉 **[Ver Presentación Online](https://TU-USUARIO.github.io/presentacion-tfm-gdpr/)**
+👉 **[Ver Presentación Online](https://gonzalezvdavid.github.io/Presentacion-TFM-GDPR/)**
 
 ## 📊 Contenido Destacado
 - 🤖 Análisis de riesgos en LLMs
